@@ -15,7 +15,9 @@ def main():
     object_name = input('Object_name: ')    # e.g. red_buoy
     output_folder = input('Output folder: ')
     data_folder = os.path.join(output_folder, 'data')
+    print("Saving data to {}".format(data_folder))
     json_file = os.path.join(output_folder, object_name + '.json')
+    print("Saving json to {}".format(json_file))
     data_list = []
 
     # initialize drive interface
@@ -84,6 +86,7 @@ def main():
     if data_list:
         with open(json_file, 'w+') as o_file:
             o_file.write(json.dumps(data_list))
+        print("Data saved to json")
 
 if __name__ == '__main__':
     main()
