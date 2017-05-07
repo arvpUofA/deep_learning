@@ -89,7 +89,7 @@ def main():
     if data_list:
         with open(json_file, 'w+') as o_file:
             o_file.write(json.dumps(data_list))
-        print("Data saved to json")
+        print("Saved {} images to json".format(len(data_list)))
 
 if __name__ == '__main__':
     main()
