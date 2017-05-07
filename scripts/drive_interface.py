@@ -44,9 +44,13 @@ class DriveInterface(object):
         :param read_info: flag to read video info
         :return: 
         """
-        query = "'{0}' in parents and mimeType contains 'video'".format(FOLDER_IDS['raw_videos'])
-        results = self.drive_service.files().list(q=query).execute()
-        items = results.get('files', [])
+        # query = "'{0}' in parents and mimeType contains 'video'".format(FOLDER_IDS['raw_videos'])
+        # results = self.drive_service.files().list(q=query).execute()
+        # items = results.get('files', [])
+        items = self.get_files(
+            mime_type='video',
+            parents=FOLDER_IDS['raw_videos']
+        )
         if not items:
             print('No files found in folder. Ensure that the folder ID is correct and it still exists.')
             return None
@@ -68,11 +72,16 @@ class DriveInterface(object):
         :param video_name: name of video file
         :return: dictionary with video information
         """
-        query = "'{0}' in parents and name = '{1}.txt' and mimeType contains 'text'".format(
-            FOLDER_IDS['raw_videos'], os.path.splitext(video_name)[0]
+        # query = "'{0}' in parents and name = '{1}.txt' and mimeType contains 'text'".format(
+        #     FOLDER_IDS['raw_videos'], os.path.splitext(video_name)[0]
+        # )
+        # results = self.drive_service.files().list(q=query).execute()
+        # results = results.get('files', [])
+        results = self.get_files(
+            file_name=os.path.splitext(video_name)[0] + '.txt',
+            mime_type='text',
+            parents=FOLDER_IDS['raw_videos']
         )
-        results = self.drive_service.files().list(q=query).execute()
-        results = results.get('files', [])
         if len(results) != 1:
             print('Error retrieving txt file for {0}'.format(video_name))
             return None
@@ -89,20 +98,53 @@ class DriveInterface(object):
         :param folder_name: name of folder
         :return: google drive folder id
         """
-        query = "name = '{0}' and mimeType = '{1}'".format(
-            folder_name, 'application/vnd.google-apps.folder'
+        results = self.get_files(
+            file_name=folder_name,
+            mime_type='application/vnd.google-apps.folder'
         )
-        results = self.drive_service.files().list(q=query).execute()
-        if len(results['files']) == 0:
+        if len(results) == 0:
             print('No folders with name {0} found'.format(folder_name))
             return None
-        elif len(results['files']) > 1:
-            print('{0} folder with name {1} found'.format(len(results['files']), folder_name))
-            for folder in results['files']:
+        elif len(results) > 1:
+            print('{0} folder with name {1} found'.format(len(results), folder_name))
+            for folder in results:
                 print('{0}: {1}'.format(folder['name'], folder['id']))
             return None
         else:
-            return results['files'][0]['id']
+            return results[0]['id']
+
+    def get_files(self, file_name=None, mime_type=None, parents=None):
+        """
+        get list of files
+        :param file_name: name of file 
+        :param mime_type: file mime type
+        :param parents: instance id of parent folder
+        :return: list of files
+        """
+        query = ""
+        if file_name:
+            query += "name = '{}'".format(file_name)
+        if mime_type:
+            if file_name:
+                query += " and "
+            query += "mimeType contains '{}'".format(mime_type)
+        if parents:
+            if mime_type or file_name:
+                query += " and "
+            query += "'{}' in parents".format(parents)
+        results = self.drive_service.files().list(q=query).execute()
+        return results.get('files', [])
+
+    def download_file(self, file_id, output_file, progress=False):
+        """
+        downloads file to disk
+        :param file_id: google drive file idd
+        :param output_file: local destination on disk
+        :param progress: flag to show progress print statements
+        """
+        contents = self.get_file_contents(file_id, progress)
+        with open(output_file, 'wb') as o_file:
+            o_file.write(contents)
 
     def read_text_file(self, file_id, progress=False):
         """
@@ -110,6 +152,16 @@ class DriveInterface(object):
         :param file_id: google drive file id
         :param progress: flag to show progress print statements
         :return: string contents of file
+        """
+        contents = self.get_file_contents(file_id, progress).decode("utf-8")
+        return contents
+
+    def get_file_contents(self, file_id, progress):
+        """
+        reads contents of a file to memory
+        :param file_id: google drive file id
+        :param progress: flag to show progress print statements
+        :return: contents of file
         """
         request = self.drive_service.files().get_media(fileId=file_id)
         fh = io.BytesIO()
@@ -119,8 +171,7 @@ class DriveInterface(object):
             status, done = downloader.next_chunk()
             if progress:
                 print("Downloaded {0}%".format(int(status.progress() * 100)))
-        contents = fh.getvalue().decode("utf-8")
-        return contents
+        return fh.getvalue()
 
     @staticmethod
     def get_credentials(secrets_file, flags):

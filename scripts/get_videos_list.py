@@ -1,6 +1,6 @@
 """
 Gets info for all videos in raw_videos folder
-Usage: ./get_videos_list <output_csv>
+Usage: python get_videos_list <output_csv>
     if output csv file given, then output goes to csv instead of std::out
 """
 
