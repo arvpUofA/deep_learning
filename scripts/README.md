@@ -18,6 +18,11 @@ Creates a json format dataset based on the object type specified.
 
 Usage: `python make_json_dataset.py`
 
+If this is being run the first time, and credentials don't exist, run the following to obtain credentials:
+
+    `python make_json_dataset.py --noauth_local_webserver`
+Follow the instructions, and sign in with your arvp gmail drive account to get autheticated.
+
 ### Dependencies
 
 * Python 3
