@@ -49,9 +49,11 @@ def main():
             print('Found {} in {}. Adding to dataset'.format(object_name, folder['name']))
             # read text file
             file_id = 1
+            bboxes_found = 0
             for line in tqdm.tqdm(drive.read_text_file(file[0]['id']).strip().split('\n')):
                 bbox = list(map(int, line.split(' ')))
-                if len(bbox) != 4 and sum(bbox) > 0: # bbox present
+                if len(bbox) == 4 and sum(bbox) > 0: # bbox present
+                    bboxes_found += 1
                     # download image
                     image_file_name = '{0}-{1:05d}.jpg'.format(folder['name'], file_id)
                     image_path = os.path.join(data_folder, image_file_name)
@@ -80,6 +82,7 @@ def main():
                         ]
                     })
                 file_id += 1
+            print("Downloaded {} images".format(bboxes_found))
         folder_index += 1
 
     # output data_list to json
