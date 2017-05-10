@@ -3,16 +3,14 @@ make json dataset
 Usage: python make_json_dataset.py
 """
 
-import sys
 import os
 import tqdm
 import json
 import drive_interface
-# TODO: remove pickle
-import pickle
 import argparse
 import yaml
 import random
+from PIL import Image
 
 
 def read_settings(settings_file):
@@ -79,6 +77,17 @@ def get_folders(drive, object_name, exclude):
     return object_folders
 
 
+def write_folders_to_file(folders, output_file):
+    """
+    write list of folders to file
+    :param folders: list of folders
+    :param output_file: output file path
+    """
+    with open(output_file, 'w+') as o_file:
+        for folder in folders:
+            o_file.write("{}\n".format(folder['name']))
+
+
 def read_bbox_file(contents, folder):
     """
     read bbox file and returns list of bboxes as dictionary with keys image_name, bbox
@@ -103,24 +112,40 @@ def read_bbox_file(contents, folder):
     return bboxes
 
 
-def download_image(drive, image_name, folder_id, destination):
+def download_image(drive, image_name, folder_id, destination, resolution):
     """
     download image to local disk
     :param drive: drive_interface
     :param image_name: image name
     :param folder_id: folder id of parent folder
     :param destination: path to destination on disk
+    :param resolution: tuple with resolution for new image (width,height)
+    :return fx, fy ratio of new resolution to original resolution (or None)
     """
-    if not os.path.isfile(destination):  # image does not exist locally
-        image_remote = drive.get_files(
-            file_name=image_name,
-            mime_type='image',
-            parents=folder_id
-        )
-        if len(image_remote) == 1:  # image found remotely. Downloading now
-            drive.download_file(image_remote[0]['id'], destination, progress=False)
+    if os.path.isfile(destination):
+        os.remove(destination)
+
+    image_remote = drive.get_files(
+        file_name=image_name,
+        mime_type='image',
+        parents=folder_id
+    )
+    if len(image_remote) == 1:  # image found remotely. Downloading now
+        # drive.download_file(image_remote[0]['id'], destination, progress=False)
+        image = drive.read_image_file(image_remote[0]['id'])
+        o_width, o_height = image.size
+        if (o_width, o_height) != resolution:
+            # scale image
+            image.thumbnail(resolution, Image.ANTIALIAS)
+            image.save(destination)
+            return float(resolution[0])/float(o_width), float(resolution[1])/float(o_height)
         else:
-            print('{}/{} not found.'.format(image_name))
+            image.save(destination)
+            return 1, 1 # fx, fy
+
+    else:
+        print('{}/{} not found.'.format(image_name))
+        return None, None
 
 
 def split_data(dataset, validation_ratio):
@@ -142,7 +167,38 @@ def split_data(dataset, validation_ratio):
     return training_set, validation_set
 
 
+def scale_bboxes(bboxes, scaling_ratios):
+    """
+    scales bounding boxes using scaling ratios dictionary
+    :param bboxes: list of bounding boxes
+    :param scaling_ratios: dictionary with image_names -> scaling ratios
+    :return: scaled bounding boxes
+    """
+    output = []
+    for item in bboxes:
+        scaling_ratio = scaling_ratios[item['image_name']]
+        if scaling_ratio == (None, None):
+            print("No scaling ratio for {}".format(item['image_name']))
+            exit(1)
+        x1 = round(item['bbox'][0] * scaling_ratio[0])
+        y1 = round(item['bbox'][1] * scaling_ratio[1])
+        w = round(abs(item['bbox'][2] - item['bbox'][0]) * scaling_ratio[0])
+        h = round(abs(item['bbox'][3] - item['bbox'][1]) * scaling_ratio[1])
+        item['bbox'][0] = x1
+        item['bbox'][1] = y1
+        item['bbox'][2] = x1 + w
+        item['bbox'][3] = y1 + h
+        output.append(item)
+    return output
+
+
 def save_to_json(dataset, data_folder, json_file):
+    """
+    save dataset to json file
+    :param dataset: dataset
+    :param data_folder: folder containing images
+    :param json_file: path to json file
+    """
     output = []
     for item in dataset:
         output.append({
@@ -184,6 +240,7 @@ def main():
 
         # get folders
         folders = get_folders(drive, object_name, settings['exclude'])
+        write_folders_to_file(folders, os.path.join(args.output_path, 'folders.txt'))
 
         # reading bounding-boxes
         print("reading bounding box files")
@@ -194,6 +251,7 @@ def main():
             )
 
         # download images
+        scaling_ratios = {} # image_name -> scaling ratio map
         data_folder = os.path.join(args.output_path, 'data')
         if not os.path.exists(data_folder):
             os.makedirs(data_folder)
@@ -201,18 +259,21 @@ def main():
         for folder in folders:
             print("\nDownloading from {}".format(folder['name']))
             for bbox in tqdm.tqdm(folder['bbox']):
-                download_image(
+                fx, fy = download_image(
                     drive,
                     bbox['image_name'],
                     folder['id'],
-                    os.path.join(data_folder, bbox['image_name'])
+                    os.path.join(data_folder, bbox['image_name']),
+                    settings['resolution']
                 )
+                scaling_ratios[bbox['image_name']] = (fx,fy)
 
-        # split dataset into training and validation and export json
         bboxes = []
         for folder in folders:
             bboxes.extend(folder['bbox'])
-        training_set, validation_set = split_data(bboxes, 0.2)
+        bboxes = scale_bboxes(bboxes, scaling_ratios)
+        # split dataset into training and validation
+        training_set, validation_set = split_data(bboxes, settings['validation_split'])
         # create to json
         save_to_json(training_set, data_folder,
                      os.path.join(args.output_path, object_name + '_train.json'))

@@ -12,6 +12,7 @@ from oauth2client import client
 from oauth2client import tools
 from oauth2client.file import Storage
 from googleapiclient.http import MediaIoBaseDownload
+from PIL import Image
 
 # readonly scope for GDrive
 SCOPES = 'https://www.googleapis.com/auth/drive.readonly'
@@ -151,7 +152,7 @@ class DriveInterface(object):
         :param output_file: local destination on disk
         :param progress: flag to show progress print statements
         """
-        contents = self.get_file_contents(file_id, progress)
+        contents = self.get_file_contents(file_id, progress).getvalue()
         with open(output_file, 'wb') as o_file:
             o_file.write(contents)
 
@@ -162,8 +163,20 @@ class DriveInterface(object):
         :param progress: flag to show progress print statements
         :return: string contents of file
         """
-        contents = self.get_file_contents(file_id, progress).decode("utf-8")
+        contents = self.get_file_contents(file_id, progress) \
+            .getvalue().decode("utf-8")
         return contents
+
+    def read_image_file(self, file_id, progress=False):
+        """
+        reads an image file from drive to memory
+        :param file_id: google drive file id
+        :param progress: flag to show progress print statements
+        :return: PIL image
+        """
+        image_bytes = self.get_file_contents(file_id, progress)
+        image_bytes.seek(0)
+        return Image.open(image_bytes)
 
     def get_file_contents(self, file_id, progress):
         """
@@ -180,7 +193,7 @@ class DriveInterface(object):
             status, done = downloader.next_chunk()
             if progress:
                 print("Downloaded {0}%".format(int(status.progress() * 100)))
-        return fh.getvalue()
+        return fh
 
     @staticmethod
     def get_credentials(secrets_file, flags):
@@ -207,3 +220,7 @@ class DriveInterface(object):
             credentials = tools.run_flow(flow, store, flags)
             print('Storing credentials to ' + credential_path)
         return credentials
+
+if __name__ == '__main__':
+    drive = DriveInterface()
+    # drive.read_image_file('0BxfNkdUtSbXRaU5kLUxkU2Q4NEk')
