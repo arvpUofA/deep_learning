@@ -16,15 +16,14 @@ Usage: `python get_videos_list <output_csv>`
 
 Creates a json format dataset based on the object type specified. 
 
-Usage: `python make_json_dataset.py`
+Usage: `python make_json_dataset.py settings_file output_path`
 
-If this is being run the first time, and credentials don't exist, run the following to obtain credentials:
-
-    `python make_json_dataset.py --noauth_local_webserver`
-Follow the instructions, and sign in with your arvp gmail drive account to get autheticated.
+If this is being run the first time, and credentials don't exist, follow the instructions, and sign in with your arvp gmail drive account to get autheticated.
 
 ### Dependencies
 
 * Python 3
 * `pip install google-api-python-client`
 * `pip install tqdm`
+* `pip install pyyaml`
+* opencv - `conda install -c https://conda.binstar.org/menpo opencv`
