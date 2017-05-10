@@ -136,7 +136,7 @@ def download_image(drive, image_name, folder_id, destination, resolution):
         o_width, o_height = image.size
         if (o_width, o_height) != resolution:
             # scale image
-            image.thumbnail(resolution, Image.ANTIALIAS)
+            image = image.resize(resolution)
             image.save(destination)
             return float(resolution[0])/float(o_width), float(resolution[1])/float(o_height)
         else:
@@ -182,12 +182,12 @@ def scale_bboxes(bboxes, scaling_ratios):
             exit(1)
         x1 = round(item['bbox'][0] * scaling_ratio[0])
         y1 = round(item['bbox'][1] * scaling_ratio[1])
-        w = round(abs(item['bbox'][2] - item['bbox'][0]) * scaling_ratio[0])
-        h = round(abs(item['bbox'][3] - item['bbox'][1]) * scaling_ratio[1])
+        w = round(item['bbox'][2] * scaling_ratio[0])
+        h = round(item['bbox'][3] * scaling_ratio[1])
         item['bbox'][0] = x1
         item['bbox'][1] = y1
-        item['bbox'][2] = x1 + w
-        item['bbox'][3] = y1 + h
+        item['bbox'][2] = w
+        item['bbox'][3] = h
         output.append(item)
     return output
 
@@ -202,7 +202,7 @@ def save_to_json(dataset, data_folder, json_file):
     output = []
     for item in dataset:
         output.append({
-            'image_path': os.path.join(data_folder, item['image_name']),
+            'image_path': os.path.join('data', item['image_name']),
             'rects': [
                 {
                     'x1': max(item['bbox'][0], 0),  # x

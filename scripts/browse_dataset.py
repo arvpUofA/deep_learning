@@ -24,10 +24,11 @@ def get_images(json_file):
     return data
 
 if __name__ == '__main__':
-    if len(sys.argv) != 2:
-        print("Usage: python browse_dataset.py json_file")
+    if len(sys.argv) != 3:
+        print("Usage: python browse_dataset.py json_file_path dataset_root")
         exit(1)
     json_file = sys.argv[1]
+    root_path = sys.argv[2]
 
     images = get_images(json_file)
 
@@ -36,7 +37,8 @@ if __name__ == '__main__':
 
     index = 0
     while 1:
-        image = cv2.imread(images[index]['image_path'])
+        print(images[index])
+        image = cv2.imread(os.path.join(root_path, images[index]['image_path']))
         bbox = images[index]['rects'][0]
         cv2.rectangle(image, (bbox['x1'], bbox['y1']), (bbox['x2'], bbox['y2']), (0, 255, 0), 3)
 
