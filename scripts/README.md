@@ -20,6 +20,12 @@ Usage: `python make_json_dataset.py settings_file output_path`
 
 If this is being run the first time, and credentials don't exist, follow the instructions, and sign in with your arvp gmail drive account to get autheticated.
 
+## browse_dataset.py 
+
+Allows viewing dataset images with ROIs drawn on them using the json file.
+
+Usage: `python browse_dataset.py json_file_path dataset_path`
+
 ### Dependencies
 
 * Python 3
