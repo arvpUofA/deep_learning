@@ -26,4 +26,5 @@ If this is being run the first time, and credentials don't exist, follow the ins
 * `pip install google-api-python-client`
 * `pip install tqdm`
 * `pip install pyyaml`
+* `pip install pillow`
 * opencv - `conda install -c https://conda.binstar.org/menpo opencv`
