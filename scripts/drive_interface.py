@@ -5,7 +5,8 @@ Google drive interface for arvp deep-learning data processing
 import os
 import httplib2
 import io
-import argparse
+# import argparse
+from collections import namedtuple
 from apiclient import discovery
 from oauth2client import client
 from oauth2client import tools
@@ -33,7 +34,15 @@ class DriveInterface(object):
     Creates a drive connection, and fetches various files
     """
     def __init__(self, secrets_file='./client_secret.json'):
-        flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
+        # flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
+        DriveFlags= namedtuple('DriveFlags',
+                               ['auth_host_name', 'auth_host_port', 'logging_level', 'noauth_local_webserver'])
+        flags = DriveFlags(
+            auth_host_name = 'localhost',
+            auth_host_port = [8080, 8090],
+            logging_level = 'ERROR',
+            noauth_local_webserver = True
+        )
         credentials = DriveInterface.get_credentials(secrets_file=secrets_file, flags=flags)
         http = credentials.authorize(httplib2.Http())
         self.drive_service = discovery.build('drive', 'v3', http=http)
