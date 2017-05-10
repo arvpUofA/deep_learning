@@ -240,7 +240,6 @@ def main():
 
         # get folders
         folders = get_folders(drive, object_name, settings['exclude'])
-        write_folders_to_file(folders, os.path.join(args.output_path, 'folders.txt'))
 
         # reading bounding-boxes
         print("reading bounding box files")
@@ -255,6 +254,7 @@ def main():
         data_folder = os.path.join(args.output_path, 'data')
         if not os.path.exists(data_folder):
             os.makedirs(data_folder)
+        write_folders_to_file(folders, os.path.join(args.output_path, 'folders.txt'))
         print("Downloading images to {}".format(data_folder))
         for folder in folders:
             print("\nDownloading from {}".format(folder['name']))
