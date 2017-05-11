@@ -73,7 +73,8 @@ class DriveInterface(object):
             print(item['name'])
             if read_info:
                 info = self.get_video_info(item['name'])
-                video_files[item['name']].update(info)
+                if info is not None:
+                    video_files[item['name']].update(info)
         return video_files
 
     def get_video_info(self, video_name):
