@@ -26,6 +26,12 @@ Allows viewing dataset images with ROIs drawn on them using the json file.
 
 Usage: `python browse_dataset.py json_file_path dataset_path`
 
+## json_to_kitti.py
+
+Converts json dataset to kitti dataset format.
+
+Usage: `python json_to_kitti.py input_json output_folder object`
+
 ### Dependencies
 
 * Python 3
