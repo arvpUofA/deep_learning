@@ -32,6 +32,12 @@ Converts json dataset to kitti dataset format.
 
 Usage: `python json_to_kitti.py input_json output_folder object`
 
+## json_to_yolo.py
+
+Converts json dataset to yolo dataset format.
+
+Usage: `python json_to_yolo.py input_json output_folder object_name image_height image_width names_file
+
 ### Dependencies
 
 * Python 3
