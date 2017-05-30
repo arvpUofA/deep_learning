@@ -7,6 +7,7 @@ import argparse
 import json
 import shutil
 import tqdm
+import cv2
 
 
 def get_json_dataset(json_path):
@@ -29,19 +30,19 @@ def get_json_dataset(json_path):
         exit(1)
 
 
-def create_label_file(file_name, item, index, image_height, image_width):
-    dw = 1./image_width
-    dh = 1./image_height
+def create_label_file(file_name, item, index, image_height, image_width, ry, rx):
+    dw = 1.0/image_width
+    dh = 1.0/image_height
 
     # see https://github.com/AlexeyAB/darknet#how-to-train-to-detect-your-custom-objects
     with open(file_name, 'w') as i_file:
         for roi in item['rects']:
-            x = ((roi['x1'] + roi['x2'])/2.0) * dw
-            y = ((roi['y1'] + roi['y2'])/2.0) * dh
-            w = ((roi['x2'] - roi['x1'])) * dw
-            h = ((roi['y2'] - roi['y1'])) * dh
+            x = ((roi['x1'] + roi['x2'])/2.0 - 1) * rx * dw
+            y = ((roi['y1'] + roi['y2'])/2.0 - 1) * ry * dh
+            w = ((roi['x2'] - roi['x1'])) * rx * dw
+            h = ((roi['y2'] - roi['y1'])) * ry * dh
             
-            i_file.write("{0} {1:.5f} {2:.5f} {3:.5f} {4:.5f}".format(
+            i_file.write("{0} {1:.8f} {2:.8f} {3:.8f} {4:.8f}".format(
                 index,
                 x,
                 y,
@@ -55,8 +56,8 @@ if __name__ == '__main__':
     parser.add_argument("input_json", help="input json for dataset")
     parser.add_argument("output_folder", help="output folder (will create folder if DNE")
     parser.add_argument("object_name", help="name of object being labeled")
-    parser.add_argument("image_height", help="image height")
-    parser.add_argument("image_width", help="image width")  
+    parser.add_argument("image_height", help="resize image height")
+    parser.add_argument("image_width", help="resize image width")  
     parser.add_argument("yolo_names", help="yolo names file path")   
     
     args = parser.parse_args()
@@ -68,8 +69,6 @@ if __name__ == '__main__':
             newline = line.rstrip()
             lines[lines.index(line)] = newline
         try:
-            print(args.object_name)
-            print(lines[0])
             index = lines.index(args.object_name)
         except ValueError:
             print("ValueError: Object name does not match any names in yolo names file")
@@ -104,9 +103,16 @@ if __name__ == '__main__':
                              os.path.splitext(os.path.basename(item['image_path']))[0] + '.jpg')
         imdb.write(image_file_name + "\n")
 
-        # create text file
-        create_label_file(file_name, item, index, float(args.image_height),float(args.image_width))
 
+        img = cv2.imread(os.path.join(input_path, item['image_path']))
+        rx = float(args.image_width) / img.shape[1]
+        ry = float(args.image_height) / img.shape[0]
+        img = cv2.resize(img,(int(args.image_width),int(args.image_height)))
+        cv2.imwrite(image_file_name,img)
+        # create text file
+        create_label_file(file_name, item, index, float(args.image_height),float(args.image_width), ry,rx)
+
+        
         # copy images
-        shutil.copy2(os.path.join(input_path, item['image_path']), images_path)
+        #shutil.copy2(os.path.join(input_path, item['image_path']), images_path)
     imdb.close()
