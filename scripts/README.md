@@ -38,6 +38,15 @@ Converts json dataset to yolo dataset format.
 
 Usage: `python json_to_yolo.py input_json output_folder object_name image_height image_width names_file
 
+## evaluate_detection.py
+
+Compares yolo formated ground truth annotations with detected boxes.
+
+Usage: `python evaluate_labels.py detected_annotations groundtruth_dir output_dir image_height image_width class_index
+
+detected_annotations should be a txt file and have the following format (with a newline for each detection):
+* `image_path item_num class_index x y w h confidence`
+
 ### Dependencies
 
 * Python 3
