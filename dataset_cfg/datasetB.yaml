@@ -1,0 +1,26 @@
+# datasetA
+
+# objects to download
+objects:
+- red_buoy
+- green_buoy
+- yellow_buoy
+- path
+
+# not needed for single object
+# merge all objects
+# merge_all: false
+# merge name
+# merge_name: buoy
+
+# resolution
+resolution: 1280x720
+
+# ratio set aside for validation set
+validation_split: 0.0
+
+# folders to exclude
+exclude:
+- 2015-07-22_TRANSDEC_GOPRO_2
+- 2015-07-24_TRANSDEC_GOPRO_2
+- 2015-07-25_TRANSDEC_GOPRO_2
