@@ -6,7 +6,7 @@ Usage: python make_json_dataset.py
 import os
 import tqdm
 import json
-import drive_interface
+from util.drive_interface import *
 import argparse
 import yaml
 import random

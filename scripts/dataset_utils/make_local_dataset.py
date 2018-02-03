@@ -18,7 +18,7 @@ import shutil
 duplicate_start = 2
 num_duplicates = 1
 
-all_objects = ["red_buoy", "green_buoy", "yellow_buoy", "path", "inverted_gate"]
+all_objects = ["red_buoy", "green_buoy", "yellow_buoy", "path", "inverted_gate","first_gate"]
 
 def read_settings(settings_file):
     """

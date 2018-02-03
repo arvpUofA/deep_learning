@@ -5,7 +5,7 @@ evaluates groundtruth with predictions
 import os
 import argparse
 import cv2
-from box import *
+from util.box import *
 import glob
 
 def get_spaced_colors(n):
