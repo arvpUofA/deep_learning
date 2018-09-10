@@ -183,3 +183,9 @@ ENV/
 .vscode
 
 # End of https://www.gitignore.io/api/linux,python,pycharm
+
+# checkpoint files in yolo_py
+**/checkpoints/*
+**/graphs/*
+**/yolo_cpp/build
+**/yolo_cpp/demo/*
