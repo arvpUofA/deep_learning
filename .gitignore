@@ -189,3 +189,5 @@ ENV/
 **/graphs/*
 **/yolo_cpp/build
 **/yolo_cpp/demo/*
+
+!**/.placeholder
