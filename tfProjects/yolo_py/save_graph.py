@@ -18,7 +18,7 @@ tf.app.flags.DEFINE_string('graph_dir', 'graphs/yolov3-tiny', 'Graph folder')
 
 tf.app.flags.DEFINE_string('output_node_names', "detection_boxes", "Names of the output nodes, comma separated.")
 
-tf.app.flags.DEFINE_boolean('tensorRT', True, 'Optimize using tensorRT')
+tf.app.flags.DEFINE_boolean('tensorRT', False, 'Optimize using tensorRT')
 tf.app.flags.DEFINE_string('precision', 'FP32', "Precision of the graph FP32 or FP16")
 # The original freeze_graph function
 # from tensorflow.python.tools.freeze_graph import freeze_graph 

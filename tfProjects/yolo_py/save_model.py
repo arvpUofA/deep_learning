@@ -18,7 +18,7 @@ tf.app.flags.DEFINE_integer('size', 416, 'Image size')
 
 tf.app.flags.DEFINE_boolean('save', True, 'Save model?')
 
-tf.app.flags.DEFINE_boolean('tensorRT', True, 'TensorRT supported ops only?')
+tf.app.flags.DEFINE_boolean('tensorRT', False, 'TensorRT supported ops only?')
 
 def main(argv=None):
 
@@ -29,7 +29,7 @@ def main(argv=None):
 
   with tf.variable_scope('detector'):
     # detections = yolo_v3(inputs, len(classes), data_format='NCHW')
-    detections = modelUtils.get_model(FLAGS.model_name, inputs, len(classes), data_format='NCHW')
+    detections = modelUtils.get_model(FLAGS.model_name, inputs, len(classes), data_format='NCHW', tensorRT=FLAGS.tensorRT)
     load_ops = yoloUtils.load_weights(tf.global_variables(scope='detector'), FLAGS.weights_file)
 
   boxes = yoloUtils.detections_boxes(detections, tensorRT=FLAGS.tensorRT)

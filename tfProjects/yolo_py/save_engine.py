@@ -7,8 +7,8 @@ from tensorrt.parsers import uffparser
 
 config = {
   # Where to save models (Tensorflow + TensorRT)
-  "frozen_model_file": "/home/jkc1/tfProjects/yolo_py/checkpoints/yolov3-tiny/frozen_model.pb",
-  "engine_save_dir": "/home/jkc1/tfProjects/yolo_py/checkpoints/yolov3-tiny",
+  "frozen_graph_file": "/home/jkc1/deep_learning/tfProjects/yolo_py/graphs/yolov3-tiny/frozen_graph.pb",
+  "engine_save_dir": "/home/jkc1/deep_learning/tfProjects/yolo_py/graphs/yolov3-tiny",
   
   # Needed for TensorRT
   "image_dim": 416,  # the image size (square images)
@@ -17,7 +17,6 @@ config = {
   "out_layer": "detection_boxes",  # name of the output tensorf in the TF conputational graph
   "precision": "fp32",  # desired precision (fp32, fp16)
 
-  "test_image_path" : "/home/data/val/roses"
 }
 
 G_LOGGER = trt.infer.ConsoleLogger(trt.infer.LogSeverity.INFO)
@@ -33,7 +32,7 @@ def create_and_save_inference_engine():
   INPUT_W = config['image_dim']
 
   # Load your newly created Tensorflow frozen model and convert it to UFF
-  uff_model = uff.from_tensorflow_frozen_model(config['frozen_model_file'], OUTPUT_LAYERS)
+  uff_model = uff.from_tensorflow_frozen_model(config['frozen_graph_file'], OUTPUT_LAYERS)
 
   # Create a UFF parser to parse the UFF file created from your TF Frozen model
   parser = uffparser.create_uff_parser()
